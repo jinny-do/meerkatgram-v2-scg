@@ -1,0 +1,68 @@
+server:
+  port: ${APP_PORT}
+
+spring:
+  application:
+    name: meerkatgram-v2-scg
+    version: v1
+  web:
+    error:
+      include-stacktrace: never
+      include-message: never
+  cloud:
+    gateway:
+      server:
+        webflux:
+          default-filters:
+            - name: RequestSize
+              args:
+                maxSize: 20MB
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: ${CORS_ALLOW_ORIGIN}
+                allowed-methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+                allowed_headers: "*"
+                allow-credentials: true
+          routes:
+            - id: ${AUTH_SERVICE_NAME}
+              uri: ${AUTH_SERVICE_URI}
+              predicates:
+                - Path=${AUTH_SERVICE_PREDICATE}
+
+            - id: ${POST_SERVICE_NAME}
+              uri: ${POST_SERVICE_URI}
+              predicates:
+                - Path=${POST_SERVICE_PREDICATE}
+
+            # Open API UI가 각 하위 서비스의 스펙을 Gateway가 origin으로 받아와서 출력하도록 설정
+            - id: ${AUTH_SERVICE_NAME}-docs
+              uri: ${AUTH_SERVICE_URI}
+              predicates:
+                - Path=/${AUTH_SERVICE_NAME}${AUTH_SERVICE_OPEN_API_PATH}
+              filters:
+                - RewritePath=/${AUTH_SERVICE_NAME}${AUTH_SERVICE_OPEN_API_PATH}, ${AUTH_SERVICE_OPEN_API_PATH}
+
+            - id: ${POST_SERVICE_NAME}-docs
+              uri: ${POST_SERVICE_URI}
+              predicates:
+                - Path=/${POST_SERVICE_NAME}${POST_SERVICE_OPEN_API_PATH}
+              filters:
+                - RewritePath=/${POST_SERVICE_NAME}${POST_SERVICE_OPEN_API_PATH}, ${POST_SERVICE_OPEN_API_PATH}
+
+# Open API (Swagger)
+springdoc:
+  swagger-ui:
+    path: /docs
+    urls:
+      - name: ${AUTH_SERVICE_NAME}
+        url: /${AUTH_SERVICE_NAME}${AUTH_SERVICE_OPEN_API_PATH}
+
+      - name: ${POST_SERVICE_NAME}
+        url: /${POST_SERVICE_NAME}${POST_SERVICE_OPEN_API_PATH}
+
+# jwt
+jwt:
+  header-key: Authorization
+  scheme: Bearer
+  secret: ${JWT_SECRET}
