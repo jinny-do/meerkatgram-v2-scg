@@ -13,7 +13,7 @@ env:
   # ghcr.io에 올릴 이미지명 설정
   IMAGE_NAME: scg
   # 매니페스트를 올릴 대상 레포
-  MANIFEST_REPO: jinny-do/k8s-manifest
+  MANIFEST_REPO: jinny-do/msa4-k8s-manifest
   # 해당 메니페스트 레파지토리의 경로
   MANIFEST_PATH: scg
 
